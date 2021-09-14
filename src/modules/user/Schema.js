@@ -7,13 +7,7 @@ mongoose.Promise = global.Promise;
 
 const schema = mongoose.Schema(
   {
-    name: {
-      salutation: { type: String, trim: true, lowercase: true },
-      first: { type: String, trim: true, lowercase: true },
-      initials: { type: String, trim: true, lowercase: true },
-      last: { type: String, trim: true, lowercase: true },
-      suffix: { type: String, trim: true, lowercase: true },
-    },
+    name: { type: String },
     contact: [
       {
         type: { type: String, trim: true, lowercase: true },

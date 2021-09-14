@@ -7,7 +7,7 @@ const schema = mongoose.Schema(
   {
     name: { type: String, required: true },
     origin: { type: String, required: true },
-    thumbnail: { type: String, required: true },
+    // thumbnail: { type: String, required: true },
     mimetype: { type: String, required: true },
     album: {
       type: mongoose.Schema.Types.ObjectId,

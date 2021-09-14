@@ -1,29 +1,44 @@
 const File = require("./Schema");
 const Validation = require("../../util/Validation");
 const UploadHandler = require("../../handler/Upload");
+const multer = require("multer");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 exports.upload = async (req, res) => {
+  let results = [];
   UploadHandler.upload(req, res, async function (err) {
     if (err instanceof multer.MulterError) {
-      console.log("Multer error ", err);
+      return Promise.reject(err);
     } else if (err) {
-      console.log("Error while uploading ", err);
+      return Promise.reject(err);
     } else {
       for (let f of req.files) {
-        await File.uploadToS3(`${Date.now()}`, f.buffer, f.mimetype);
+        let filename = `${Date.now()}.${f.mimetype.split("/")[1]}`;
+        await UploadHandler.uploadToS3(
+          filename,
+          f.buffer,
+          f.mimetype,
+          req.body.sizes
+        );
+        let file = new File({
+          name: filename,
+          origin: process.env.UPLOAD_ORIGIN,
+          mimetype: f.mimetype,
+          album: req.params.album,
+        });
+        file = await file.save();
+        results.push(file);
       }
     }
-    res.json("success");
+    res.json(results);
   });
 };
 
-let add = async (req, res) => {
+exports.add = async (req, res) => {
   let file = new File(req.body);
   file = await file.save();
   res.json(File);
 };
-
-exports.add = add;
 
 exports.get = async (req, res) => {
   let file = await File.findById(req.params.id);
@@ -32,8 +47,8 @@ exports.get = async (req, res) => {
 
 //list Files can be filtered by name with field q
 exports.list = async (req, res) => {
-  let q = Validation.list(req.query.q, req.query);
-  let data = await File.list(q);
+  let q = Validation.paging(req.query.q, req.query);
+  let data = await File.list({ album: new ObjectId(req.params.album) }, q);
   res.json(data);
 };
 
@@ -53,10 +68,7 @@ exports.update = async (req, res) => {
 
 exports.validate = async (req, res, next) => {
   const schema = Joi.object().keys({
-    name: Joi.string().required().label("must supply name!"),
-    mimetype: Joi.string().required().label("must supply mimetype!"),
     origin: Joi.string().required().label("must supply origin!"),
-    album: Joi.string().required().label("must supply album"),
   });
 
   const result = await schema.validate(req.body, {

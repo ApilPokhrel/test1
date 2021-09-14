@@ -2,7 +2,7 @@ const Album = require("./Schema");
 const Validation = require("../../util/Validation");
 
 exports.add = async (req, res) => {
-  let album = new Album(req.body);
+  let album = new Album({ name: req.body.name, creator: req.user._id });
   album = await album.save();
   res.json(album);
 };
@@ -41,7 +41,6 @@ exports.update = async (req, res) => {
 exports.validate = async (req, res, next) => {
   const schema = Joi.object().keys({
     name: Joi.string().required().label("must supply name!"),
-    creator: Joi.string().required().label("must supply creator"),
   });
 
   const result = await schema.validate(req.body, {

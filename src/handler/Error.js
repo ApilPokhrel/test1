@@ -13,7 +13,7 @@ exports.catchErrors = (fn) => {
 };
 
 exports.productionErrors = (err, req, res, next) => {
-  console.log(err);
+  // console.log(err);
   res.status(err.status || 500);
   res.json(errorRecog(err));
 };

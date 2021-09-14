@@ -1,16 +1,62 @@
 const AuthToken = require("../../util/AuthToken");
 const User = require("./Schema");
 const Joi = require("@hapi/joi");
+const Hash = require("../../util/Hash");
+const C = require("../common/Controller");
 
 exports.login = async (req, res) => {
-  const { username, password } = req.body;
-  let user = await User.findByCredentials(username, password);
+  const { email, password } = req.body;
+  let user = await User.findByCredentials(email, password);
+  if (!user.is_verified) {
+    C.sendMail({ to: email, user_id: user._id });
+  }
   const accessToken = AuthToken.generateAccessToken(user);
   res.json({ user, accessToken });
 };
 
+exports.verifyCode = async (req, res) => {
+  const { code } = req.body;
+  await C.verifyCode(code, req.user._id);
+  let email = req.user.contact.filter((e) => e.type === "email");
+  let user = await User.findOneAndUpdate(
+    { _id: req.user._id, "contact.address": email[0].address },
+    { $set: { "contact.$.is_verified": true, is_verified: true } },
+    { new: true }
+  );
+  res.json(user);
+};
+
+exports.sendCode = async (req, res) => {
+  let user = req.user;
+  let email = user.contact.filter((e) => e.type === "email");
+  C.sendMail({ to: email[0].address, user_id: user._id });
+  res.json(true);
+};
+
+exports.sendCodeUnverified = async (req, res) => {
+  let { email } = req.body;
+  let user = await User.findOne({ "contact.address": email });
+  if (user) {
+    C.sendMail({ to: email, user_id: email });
+  }
+  res.json(user);
+};
+
+exports.resetPass = async (req, res) => {
+  const { code, password, email } = req.body;
+  let user_id = email;
+  await C.verifyCode(code, user_id);
+  let hash = await C.generateHash(password);
+  let user = await User.findOneAndUpdate(
+    { "contact.address": email },
+    { $set: { password: hash } },
+    { new: true }
+  );
+  res.json(user);
+};
+
 exports.register = async (req, res) => {
-  let { name, email, password, phone, address, roles, profile } = req.body;
+  let { name, email, password } = req.body;
   let payload = {};
   const emailUser = await User.findOne({ "contact.address": email });
   if (emailUser) {
@@ -20,13 +66,22 @@ exports.register = async (req, res) => {
   }
   payload.name = name;
   payload.contact = [{ address: email, type: "email" }];
-  if (phone) payload.contact.push({ address: phone, type: "phone" });
   payload.password = password;
-  if (profile) payload.profile = profile;
   let user = new User(payload);
   const accessToken = AuthToken.generateAccessToken(user);
   user = await user.save();
   res.json({ user, accessToken });
+};
+
+exports.resetPass = async (req, res) => {
+  const { password } = req.body;
+  let hash = await Hash.generatePassword(password);
+  let user = await User.findOneAndUpdate(
+    { _id: req.user._id },
+    { $set: { password: hash } },
+    { new: true }
+  );
+  res.json(user);
 };
 
 exports.get = async (req, res) => {
@@ -74,7 +129,7 @@ exports.delete = async (req, res) => {
 
 exports.validateLogin = async (req, res, next) => {
   const schema = Joi.object().keys({
-    username: Joi.string().required().label("must supply email address!"),
+    email: Joi.string().required().label("must supply email address!"),
     password: Joi.string().required().label("must supply password"),
   });
 
@@ -101,7 +156,6 @@ exports.validateRegister = async (req, res, next) => {
       .required()
       .min(6)
       .label("password must be at least 6 character"),
-    phone: Joi.string().required().label("must supply Phone number"),
   });
 
   const result = await schema.validate(req.body, {

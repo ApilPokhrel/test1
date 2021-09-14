@@ -8,6 +8,9 @@ const errorHandler = require("./handler/Error");
 const routes = require("./Routes");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const path = require("path");
+
+// app.use(express.static(path.join(__dirname, "/../uploads")));
 
 app.use(cors());
 app.use(helmet());
@@ -16,7 +19,7 @@ app.set("trust proxy", true);
 app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use("/", express.static(__dirname + "../assets"));
+
 app.use(cookieParser());
 
 app.use("/api/v1", routes);
