@@ -70,6 +70,7 @@ exports.register = async (req, res) => {
   let user = new User(payload);
   const accessToken = AuthToken.generateAccessToken(user);
   user = await user.save();
+  C.sendMail({ to: email, user_id: user._id });
   res.json({ user, accessToken });
 };
 
