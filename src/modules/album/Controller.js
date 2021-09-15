@@ -1,5 +1,6 @@
 const Album = require("./Schema");
 const Validation = require("../../util/Validation");
+const Joi = require("@hapi/joi");
 
 exports.add = async (req, res) => {
   let album = new Album({ name: req.body.name, creator: req.user._id });
