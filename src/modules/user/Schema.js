@@ -81,7 +81,7 @@ schema.statics.findByToken = async function (token) {
   try {
     decoded = jwt.verify(token, process.env.AUTH_SECRET);
   } catch (err) {
-    return Promise.reject("Token not decoded");
+    return null;
   }
 
   return User.findOne({
@@ -94,11 +94,11 @@ schema.statics.findByCredentials = async function (address, password) {
   let query = { "contact.address": address };
   const user = await User.findOne(query);
   if (!user) {
-    return Promise.reject({ message: "user not found", status: 400 });
+    return Promise.reject({ message: "user not found", status: 404 });
   }
   const res = await bcrypt.compare(password, user.password);
   if (!res) {
-    return Promise.reject({ message: "Password did not matched", status: 400 });
+    return Promise.reject({ message: "Password did not matched", status: 404 });
   }
   return user;
 };

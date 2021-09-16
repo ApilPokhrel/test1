@@ -5,12 +5,14 @@ module.exports = async function (req, res, next) {
   let { token } = req.headers || req.body || req.query;
   let user = await User.findByToken(token);
   if (!user) {
-    res.status(403).send("Unauthorized");
+    res.status(403);
+    res.json({ message: "Unauthrorized", status: 403 });
     return;
   }
   if (allow.indexOf(req.baseUrl + req.path) < 0) {
     if (!user.is_verified) {
-      res.status(401).send("Not verified");
+      res.status(401);
+      res.json({ message: "Not verified", status: 401 });
       return;
     }
   }

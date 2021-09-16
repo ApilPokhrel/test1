@@ -97,7 +97,7 @@ exports.getByContact = async (req, res) => {
 };
 
 exports.edit = async (req, res) => {
-  let { name, email, phone, email_verified, phone_verified, status } = req.body;
+  let { name, email, email_verified, status } = req.body;
   let payload = {};
   let contact = [];
   if (name) payload.name = name;
@@ -107,13 +107,8 @@ exports.edit = async (req, res) => {
       type: "email",
       is_verified: email_verified,
     });
-  if (phone)
-    contact.push({
-      address: phone,
-      type: "phone",
-      is_verified: phone_verified,
-    });
-  if (email && phone) payload.contact = contact;
+
+  if (email) payload.contact = contact;
   if (status) payload.status = status;
   let user = await User.findByIdAndUpdate(
     req.params.id,
@@ -130,7 +125,10 @@ exports.delete = async (req, res) => {
 
 exports.validateLogin = async (req, res, next) => {
   const schema = Joi.object().keys({
-    email: Joi.string().required().label("must supply email address!"),
+    email: Joi.string()
+      .email({ tlds: { allow: false } })
+      .required()
+      .label("must supply valid email address"),
     password: Joi.string().required().label("must supply password"),
   });
 
@@ -152,7 +150,10 @@ exports.validateLogin = async (req, res, next) => {
 exports.validateRegister = async (req, res, next) => {
   const schema = Joi.object().keys({
     name: Joi.string().required().label("must supply full name!"),
-    email: Joi.string().required().label("must supply email address"),
+    email: Joi.string()
+      .email({ tlds: { allow: false } })
+      .required()
+      .label("must supply valid email address"),
     password: Joi.string()
       .required()
       .min(6)

@@ -3,7 +3,7 @@ const e = require("../../handler/Error");
 const c = require("./Controller");
 const auth = require("../../middleware/Auth");
 
-router.get("/", e.catchErrors(c.list));
+router.get("/", auth, e.catchErrors(c.list));
 
 router.post("/", auth, c.validate, e.catchErrors(c.add));
 

@@ -9,6 +9,8 @@ const routes = require("./Routes");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const path = require("path");
+const swaggerUI = require("swagger-ui-express");
+const docs = require("./docs");
 
 // app.use(express.static(path.join(__dirname, "/../uploads")));
 
@@ -23,6 +25,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use("/api/v1", routes);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(docs));
 
 app.use(errorHandler.notFound);
 
