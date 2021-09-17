@@ -47,7 +47,7 @@ exports.get = async (req, res) => {
 
 //list Files can be filtered by name with field q
 exports.list = async (req, res) => {
-  let q = Validation.paging(req.query.q, req.query);
+  let q = Validation.paging(req.query);
   let data = await File.list({ album: new ObjectId(req.params.album) }, q);
   res.json(data);
 };

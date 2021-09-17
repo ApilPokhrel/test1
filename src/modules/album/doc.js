@@ -5,6 +5,15 @@ module.exports = {
       description: "Get albums",
       operationId: "albums",
       parameters: [],
+      requestBody: {
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/AlbumListBody",
+            },
+          },
+        },
+      },
       responses: {
         200: {
           description: "ALbums",

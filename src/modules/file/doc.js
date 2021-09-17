@@ -15,6 +15,16 @@ module.exports = {
           description: "A album id",
         },
       ],
+
+      requestBody: {
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/FileListBody",
+            },
+          },
+        },
+      },
       responses: {
         200: {
           description: "Files",

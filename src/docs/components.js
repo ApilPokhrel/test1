@@ -172,6 +172,39 @@ module.exports = {
         },
       },
 
+      AlbumListBody: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "total no of albums to get",
+          },
+          start: {
+            type: "number",
+            description: "offset from where  to get",
+          },
+
+          q: {
+            type: "string",
+            description: "name of album for search",
+          },
+        },
+      },
+
+      FileListBody: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "total no of files to get",
+          },
+          start: {
+            type: "number",
+            description: "offset from where  to get",
+          },
+        },
+      },
+
       Error: {
         type: "object",
         properties: {
