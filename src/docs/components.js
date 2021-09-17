@@ -152,6 +152,16 @@ module.exports = {
         },
       },
 
+      FileInput: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            required: true,
+          },
+        },
+      },
+
       Upload: {
         type: "object",
         properties: {
